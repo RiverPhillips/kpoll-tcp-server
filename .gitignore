@@ -3,3 +3,4 @@ obj/
 # Premake outputs
 Makefile
 *.make
+.vscode/
