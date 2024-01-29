@@ -23,19 +23,18 @@ public:
         createAndBindSocket();
         listen(listener_fd, 3);
         setupKQueue();
-        std::cout << "Waiting for connections..." << std::endl;
         eventLoop();
     }
 
     ~TCPServer()
     {
-        if (listener_fd != -1)
-        {
-            close(listener_fd);
-        }
         if (kq != -1)
         {
             close(kq);
+        }
+        if (listener_fd != -1)
+        {
+            close(listener_fd);
         }
     }
 
