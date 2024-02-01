@@ -1,6 +1,6 @@
-# KQueue TCP Server
+# TCP Server
 
-This is a simple TCP server that uses the KQueue API to handle multiple connections.
+This is a simple TCP server that uses KQueue, and Epoll to handle multiple connections.
 
 ## Usage
 
@@ -9,7 +9,7 @@ Build and start the server with the following commands:
 ```bash
     premake5 gmake2
     make
-    ./bin/Debug/KQueueServer
+    ./bin/Debug/TcpServer
 ```
 
 To connect to the server, use netcat:

@@ -1,7 +1,7 @@
-workspace "KqueueTcpServer"
+workspace "TcpServer"
    configurations { "Debug", "Release" }
 
-project "KqueueTcpServer"
+project "TcpServer"
    kind "ConsoleApp"
    language "C++"
    targetdir "bin/%{cfg.buildcfg}"
