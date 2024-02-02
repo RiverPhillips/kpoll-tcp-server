@@ -6,8 +6,7 @@
 #include "common.h"
 #if defined(__APPLE__) && defined(__MACH__)
 #include <sys/event.h>
-#endif
-#if defined(__linux__)
+#elif defined(__linux__)
 #include <sys/epoll.h>
 #endif
 class TCPServer
@@ -145,24 +144,25 @@ private:
                     {
                         handleError("Error registering kevent: ");
                     }
-                else if (event[i].filter & EVFILT_READ)
-                {
-                    char buf[BUFFER_SIZE];
-                    int bytes_read = read(event_fd, buf, BUFFER_SIZE);
-                    std::cout << "Bytes read: " << bytes_read << std::endl;
-                    ssize_t bytes_written = write(polled_events[i].data.fd, buffer, bytes_read);
-                    if (bytes_written < 0){
-                        handleError("Error writing to client fd: ");
+                    else if (event[i].filter & EVFILT_READ)
+                    {
+                        char buf[BUFFER_SIZE];
+                        int bytes_read = read(event_fd, buf, BUFFER_SIZE);
+                        std::cout << "Bytes read: " << bytes_read << std::endl;
+                        ssize_t bytes_written = write(event_fd, buf, bytes_read);
+                        if (bytes_written < 0)
+                        {
+                            handleError("Error writing to client fd: ");
+                        }
                     }
                 }
             }
         }
     }
-#endif
-
-#if defined(__linux__)
+#elif defined(__linux__)
     // Todo epoll event loop
-    void eventLoop(){
+    void eventLoop()
+    {
         // We want to setup epoll here.
         struct epoll_event event;
         struct epoll_event polled_events[MAX_EVENTS];
@@ -172,30 +172,36 @@ private:
 
         // Create epoll instance.
         int epfd = epoll_create1(EPOLL_CLOEXEC);
-        if (epfd < 0){
+        if (epfd < 0)
+        {
             handleError("Error creating epoll instance: ");
         }
 
         event.events = EPOLLIN;
         event.data.fd = listener_fd;
 
-        if (epoll_ctl(epfd, EPOLL_CTL_ADD, listener_fd, &event) < 0) {
+        if (epoll_ctl(epfd, EPOLL_CTL_ADD, listener_fd, &event) < 0)
+        {
             handleError("Error adding listener fd to epoll: ");
         }
 
         std::cout << "Epoll instance created. Starting event loop" << std::endl;
 
-        while (true){
+        while (true)
+        {
             int num_fds = epoll_wait(epfd, polled_events, MAX_EVENTS, -1);
-            if (num_fds < 0) {
+            if (num_fds < 0)
+            {
                 handleError("Error polling events: ");
             }
 
             printf("New events received. count: %d\n", num_fds);
 
-            for (int i = 0; i < num_fds; i++){
+            for (int i = 0; i < num_fds; i++)
+            {
                 // Handle new connection.
-                if( polled_events[i].data.fd == listener_fd){
+                if (polled_events[i].data.fd == listener_fd)
+                {
                     std::cout << "New connection received." << std::endl;
 
                     int client_fd = accept(listener_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_len);
@@ -209,25 +215,33 @@ private:
                     client_event.data.fd = client_fd;
 
                     // Add the new client fd to epoll.
-                    if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &client_event) < 0) {
+                    if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &client_event) < 0)
+                    {
                         handleError("Error adding client fd to epoll: ");
                     }
                     std::cout << "Added client fd to epoll: " << client_fd << std::endl;
-                } else {
+                }
+                else
+                {
                     char buffer[BUFFER_SIZE];
                     ssize_t bytes_read = read(polled_events[i].data.fd, buffer, sizeof(buffer));
-                    if (bytes_read < 0){
+                    if (bytes_read < 0)
+                    {
                         handleError("Error reading from client fd: ");
                     }
-                   
-                    if (bytes_read == 0){
+
+                    if (bytes_read == 0)
+                    {
                         std::cout << "Closing client fd: " << polled_events[i].data.fd << std::endl;
                         close(polled_events[i].data.fd);
-                    } else {
+                    }
+                    else
+                    {
                         std::cout << "Bytes read: " << bytes_read << std::endl;
                         // Echo back to client.
                         ssize_t bytes_written = write(polled_events[i].data.fd, buffer, bytes_read);
-                        if (bytes_written < 0){
+                        if (bytes_written < 0)
+                        {
                             handleError("Error writing to client fd: ");
                         }
                     }
